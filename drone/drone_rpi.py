@@ -1,11 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/python -u
 # raspberry pi nrf24l01 hub
 # more details at http://blog.riyas.org
 # Credits to python port of nrf24l01, Joao Paulo Barrac & maniacbugs original c library
 
 from nrf24 import NRF24
-import time
+import time, sys
 from time import gmtime, strftime
+import picamera
+
 
 pipes = [[0xf0, 0xf0, 0xf0, 0xf0, 0xe1], [0xf0, 0xf0, 0xf0, 0xf0, 0xd2]]
 
@@ -27,6 +29,9 @@ radio.stopListening()
 radio.printDetails()
 radio.startListening()
 
+# Camera Setup
+camera = picamera.PiCamera()
+
 while True:
     pipe = [0]
     while not radio.available(pipe, True):
@@ -34,7 +39,9 @@ while True:
     recv_buffer = []
     radio.read(recv_buffer)
     out = ''.join(chr(i) for i in recv_buffer)
-    
+
+    print out
+
     if out[ : 10] == "Sleep Mode":
         print out
     else:
@@ -45,7 +52,10 @@ while True:
         lng = float(lng_str)
         alt_num = float(alt_str)
         
-        print out
+        
         print lat
         print lng
         print alt_str
+        camera.capture('/var/www/html/image.jpg') # Image stored in website
+        sys.stdout.flush()
+        time.sleep(1)
