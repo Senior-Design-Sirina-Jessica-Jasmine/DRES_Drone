@@ -7,7 +7,7 @@ from nrf24 import NRF24
 import time, sys
 from time import gmtime, strftime
 import picamera
-
+from shutil import copyfile
 
 pipes = [[0xf0, 0xf0, 0xf0, 0xf0, 0xe1], [0xf0, 0xf0, 0xf0, 0xf0, 0xd2]]
 
@@ -31,6 +31,9 @@ radio.startListening()
 
 # Camera Setup
 camera = picamera.PiCamera()
+camera.resolution = (640, 480)
+
+time.sleep(0.1)
 
 while True:
     pipe = [0]
@@ -50,12 +53,21 @@ while True:
         alt_str = alt_str
         lat = float(lat_str)
         lng = float(lng_str)
-        alt_num = float(alt_str)
+        alt_num = float(alt_str)        
         
-        
-        print lat
-        print lng
-        print alt_str
-        camera.capture('/var/www/html/image.jpg') # Image stored in website
+        camera.capture('image.jpg') # Image stored in website
+	copyfile('image.jpg', '/var/www/html/image.jpg')	
+
+	my_file = open('tempfile.txt', 'w')
+	my_file.truncate()
+	my_file.write("Current Drone Location. Latitude: ")
+	my_file.write(lat_str)
+	my_file.write(" Longitude: ")
+	my_file.write(lng_str)
+	my_file.write(" Altitude: ")
+	my_file.write(alt_str)
+	my_file.close()
+
+	copyfile('tempfile.txt', '/var/www/html/file.txt')
         sys.stdout.flush()
-        time.sleep(1)
+        time.sleep(1.5)
